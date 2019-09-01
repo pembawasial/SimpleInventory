@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
@@ -126,8 +125,8 @@ public class InputActivity extends AppCompatActivity implements View.OnClickList
                                             public void onSuccess(Uri uri) {
                                                 String image = uri.toString();
                                                 firestore.document("Item/" + documentReference.getId()).update("image", image);
-                                                Snackbar.make(findViewById(R.id.activity_input), "Profile Picture Updated", Snackbar.LENGTH_LONG).show();
-                                                startActivity(new Intent(InputActivity.this, MainActivity.class));
+                                                Toast.makeText(InputActivity.this, "Data inserted successfully", Toast.LENGTH_SHORT).show();
+                                                startActivity(new Intent(InputActivity.this, ItemActivity.class));
                                                 finish();
                                             }
                                         });
