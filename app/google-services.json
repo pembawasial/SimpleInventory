@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "717692735521",
+    "firebase_url": "https://simpleinventory-800dc.firebaseio.com",
+    "project_id": "simpleinventory-800dc",
+    "storage_bucket": "simpleinventory-800dc.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:717692735521:android:8a6cdd8ea7116326",
+        "android_client_info": {
+          "package_name": "com.dintaaditya.simpleinventory"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "717692735521-8r60mv6d5n7k8fdrrokc9bet7ied66f3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dintaaditya.simpleinventory",
+            "certificate_hash": "58fe4cc84952dd90ea6ce99467a3cc4915978e7b"
+          }
+        },
+        {
+          "client_id": "717692735521-rsvhem8bohuin3j33c9ai5tdq38fnu5r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDoSR_u-xGfdsvOlPBkW7brFGBd9GD4XZY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "717692735521-rsvhem8bohuin3j33c9ai5tdq38fnu5r.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
