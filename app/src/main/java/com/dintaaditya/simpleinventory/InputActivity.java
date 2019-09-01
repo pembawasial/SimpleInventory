@@ -1,15 +1,18 @@
 package com.dintaaditya.simpleinventory;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -35,6 +38,7 @@ public class InputActivity extends AppCompatActivity implements View.OnClickList
     Uri imageFile;
     FirebaseFirestore firestore;
     StorageReference storageRef;
+    LinearLayout progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +52,7 @@ public class InputActivity extends AppCompatActivity implements View.OnClickList
         btnPlus = findViewById(R.id.btn_plus);
         btnMinus = findViewById(R.id.btn_minus);
         imgItem = findViewById(R.id.img_item);
+        progressBar = findViewById(R.id.progress_bar);
 
         btnGetPic.setOnClickListener(this);
         btnPlus.setOnClickListener(this);
@@ -76,6 +81,8 @@ public class InputActivity extends AppCompatActivity implements View.OnClickList
                 minStock();
                 break;
             case R.id.btn_save:
+                closeKeyboard();
+                progressBar.setVisibility(View.VISIBLE);
                 saveData();
                 break;
         }
@@ -149,7 +156,13 @@ public class InputActivity extends AppCompatActivity implements View.OnClickList
 
     }
 
-
+    private void closeKeyboard() {
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager i = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            i.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+    }
     private void plusStock() {
     }
 

@@ -1,5 +1,6 @@
 package com.dintaaditya.simpleinventory;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,10 +10,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -31,10 +34,11 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
     String SKU;
     ImageView imgItem;
     EditText edtSKU, edtName, edtStock;
-    Button btnShowLog, btnCancel, btnUpdate;
+    Button btnShowLog, btnSendItem, btnCancel, btnUpdate;
     ImageButton btnPlus, btnMinus;
     DocumentReference itemDetail;
 
+    LinearLayout progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,12 +53,15 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
         edtStock = findViewById(R.id.edt_stock);
 
         btnShowLog = findViewById(R.id.btn_log_item);
+        btnSendItem = findViewById(R.id.btn_send_item);
         btnCancel = findViewById(R.id.btn_cancel);
         btnUpdate = findViewById(R.id.btn_update);
         btnPlus = findViewById(R.id.btn_plus);
         btnMinus = findViewById(R.id.btn_minus);
+        progressBar = findViewById(R.id.progress_bar);
 
         btnShowLog.setOnClickListener(this);
+        btnSendItem.setOnClickListener(this);
         btnCancel.setOnClickListener(this);
         btnUpdate.setOnClickListener(this);
         btnPlus.setOnClickListener(this);
@@ -77,11 +84,16 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
             case R.id.btn_log_item:
                 startActivity(new Intent(DetailActivity.this, ItemLogActivity.class).putExtra("SKU", SKU));
                 break;
+            case R.id.btn_send_item:
+                startActivity(new Intent(DetailActivity.this, ShipmentActivity.class).putExtra("SKU", SKU));
+                break;
             case R.id.btn_cancel:
                 showItemDetail();
                 formState(false);
                 break;
             case R.id.btn_update:
+                closeKeyboard();
+                progressBar.setVisibility(View.VISIBLE);
                 updateData();
                 break;
         }
@@ -130,6 +142,7 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
+                        progressBar.setVisibility(View.GONE);
                         Toast.makeText(DetailActivity.this, "Data Updated Successfully", Toast.LENGTH_SHORT).show();
                         formState(false);
                     }
@@ -180,10 +193,20 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
             btnCancel.setVisibility(View.VISIBLE);
             btnUpdate.setVisibility(View.VISIBLE);
             btnShowLog.setVisibility(View.GONE);
+            btnSendItem.setVisibility(View.GONE);
         } else {
             btnCancel.setVisibility(View.GONE);
             btnUpdate.setVisibility(View.GONE);
             btnShowLog.setVisibility(View.VISIBLE);
+            btnSendItem.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void closeKeyboard() {
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager i = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            i.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
     }
 }
