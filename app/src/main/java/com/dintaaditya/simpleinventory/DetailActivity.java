@@ -71,6 +71,41 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
 
     }
 
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.btn_log_item:
+                startActivity(new Intent(DetailActivity.this, ItemLogActivity.class).putExtra("SKU", SKU));
+                break;
+            case R.id.btn_cancel:
+                showItemDetail();
+                formState(false);
+                break;
+            case R.id.btn_update:
+                updateData();
+                break;
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_detail, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.detail_edit:
+                formState(true);
+                break;
+            case R.id.detail_delete:
+                deleteData();
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     private void showItemDetail() {
         itemDetail = FirebaseFirestore.getInstance().document("Item/" + SKU);
         itemDetail.addSnapshotListener(new EventListener<DocumentSnapshot>() {
@@ -88,45 +123,26 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
         });
     }
 
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.btn_log_item:
-                startActivity(new Intent(DetailActivity.this, ItemLogActivity.class).putExtra("SKU", SKU));
-                break;
-            case R.id.btn_cancel:
-                showItemDetail();
-                formState(false);
-                break;
-            case R.id.btn_update:
-//                updateData();
-                break;
-        }
+    private void updateData() {
+        itemDetail.update(
+                "name", edtName.getText().toString().trim(),
+                "stock", Integer.parseInt(edtStock.getText().toString()))
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(DetailActivity.this, "Data Updated Successfully", Toast.LENGTH_SHORT).show();
+                        formState(false);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(DetailActivity.this, "Failed to update data!!, " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_detail, menu);
-        return true;
-    }
-
-
-    //give an action based on selected item id
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.detail_edit:
-                formState(true);
-//                startActivity(new Intent(getContext(), EditProfileActivity.class).putExtra("uid", uid));
-                break;
-            case R.id.detail_delete:
-                showDeleteDialog();
-                break;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    private void showDeleteDialog() {
+    private void deleteData() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Delete Data")
                 .setMessage("Do you want to delete this data?")
@@ -137,7 +153,6 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void aVoid) {
-                                        Toast.makeText(DetailActivity.this, "Successfully deleted data", Toast.LENGTH_SHORT).show();
                                         startActivity(new Intent(getApplicationContext(), ItemActivity.class));
                                         finish();
                                     }
@@ -145,7 +160,7 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
                                 .addOnFailureListener(new OnFailureListener() {
                                     @Override
                                     public void onFailure(@NonNull Exception e) {
-                                        Toast.makeText(DetailActivity.this, "Failed to delete data, " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(DetailActivity.this, "Failed to delete data!!, " + e.getMessage(), Toast.LENGTH_SHORT).show();
                                     }
                                 });
 
@@ -156,7 +171,7 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
         dialog.show();
     }
 
-    void formState(boolean status) {
+    private void formState(boolean status) {
         edtName.setEnabled(status);
         edtStock.setEnabled(status);
         btnPlus.setEnabled(status);
@@ -165,7 +180,6 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
             btnCancel.setVisibility(View.VISIBLE);
             btnUpdate.setVisibility(View.VISIBLE);
             btnShowLog.setVisibility(View.GONE);
-
         } else {
             btnCancel.setVisibility(View.GONE);
             btnUpdate.setVisibility(View.GONE);

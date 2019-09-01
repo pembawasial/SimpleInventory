@@ -125,7 +125,7 @@ public class InputActivity extends AppCompatActivity implements View.OnClickList
                                             public void onSuccess(Uri uri) {
                                                 String image = uri.toString();
                                                 firestore.document("Item/" + documentReference.getId()).update("image", image);
-                                                Toast.makeText(InputActivity.this, "Data inserted successfully", Toast.LENGTH_SHORT).show();
+                                                Toast.makeText(InputActivity.this, "Data Inserted Successfully", Toast.LENGTH_LONG).show();
                                                 startActivity(new Intent(InputActivity.this, ItemActivity.class));
                                                 finish();
                                             }
@@ -135,7 +135,7 @@ public class InputActivity extends AppCompatActivity implements View.OnClickList
                                 .addOnFailureListener(new OnFailureListener() {
                                     @Override
                                     public void onFailure(@NonNull Exception e) {
-                                        Toast.makeText(getApplicationContext(), "Failed to upload image, " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(getApplicationContext(), "Failed to upload image!!, " + e.getMessage(), Toast.LENGTH_SHORT).show();
                                     }
                                 });
                     }
@@ -143,7 +143,7 @@ public class InputActivity extends AppCompatActivity implements View.OnClickList
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(InputActivity.this, "gagal", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(InputActivity.this, "Failed to insert data!!, " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
 
