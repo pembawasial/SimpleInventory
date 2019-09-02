@@ -53,46 +53,22 @@
                         android:textSize="18sp"
                         android:textStyle="bold" />
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
+
+                    <android.support.design.widget.TextInputLayout
+                        android:id="@+id/til_quantity"
+                        android:layout_width="250dp"
                         android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:orientation="horizontal">
+                        android:layout_gravity="center"
+                        android:focusableInTouchMode="true">
 
-                        <ImageButton
-                            android:id="@+id/btn_minus"
-                            style="@style/Widget.AppCompat.ActionButton"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:layout_margin="10dp"
-                            android:background="@color/colorAccent"
-                            android:src="@drawable/ic_minus" />
-
-                        <android.support.design.widget.TextInputLayout
-                            android:id="@+id/til_quantity"
-                            android:layout_width="150dp"
+                        <EditText
+                            android:id="@+id/edt_quantity"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:focusableInTouchMode="true">
+                            android:hint="Item quantity"
+                            android:inputType="number" />
+                    </android.support.design.widget.TextInputLayout>
 
-                            <EditText
-                                android:id="@+id/edt_quantity"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:hint="Item quantity"
-                                android:inputType="number" />
-                        </android.support.design.widget.TextInputLayout>
-
-                        <ImageButton
-                            android:id="@+id/btn_plus"
-                            style="@style/Widget.AppCompat.ActionButton"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:layout_margin="10dp"
-                            android:background="@color/colorAccent"
-                            android:src="@drawable/ic_plus" />
-
-                    </LinearLayout>
 
                     <android.support.design.widget.TextInputLayout
                         android:id="@+id/til_receiver"
@@ -177,7 +153,7 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="30dp"
                 android:background="@drawable/round_button"
-                android:text="Send Item to Customer"
+                android:text="Send Item"
                 android:textColor="@color/white" />
 
         </LinearLayout>
@@ -195,13 +171,6 @@
         <ProgressBar
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="Sending Request...."
-            android:textSize="16sp" />
 
     </LinearLayout>
 </RelativeLayout>

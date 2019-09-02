@@ -10,7 +10,6 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -33,7 +32,6 @@ import java.io.File;
 public class InputActivity extends AppCompatActivity implements View.OnClickListener {
     EditText edtName, edtStock;
     Button btnSave, btnGetPic;
-    ImageButton btnPlus, btnMinus;
     ImageView imgItem;
     Uri imageFile;
     FirebaseFirestore firestore;
@@ -49,14 +47,10 @@ public class InputActivity extends AppCompatActivity implements View.OnClickList
         edtStock = findViewById(R.id.edt_stock);
         btnSave = findViewById(R.id.btn_save);
         btnGetPic = findViewById(R.id.btn_get_picture);
-        btnPlus = findViewById(R.id.btn_plus);
-        btnMinus = findViewById(R.id.btn_minus);
         imgItem = findViewById(R.id.img_item);
         progressBar = findViewById(R.id.progress_bar);
 
         btnGetPic.setOnClickListener(this);
-        btnPlus.setOnClickListener(this);
-        btnMinus.setOnClickListener(this);
         btnSave.setOnClickListener(this);
 
         firestore = FirebaseFirestore.getInstance();
@@ -73,12 +67,6 @@ public class InputActivity extends AppCompatActivity implements View.OnClickList
         switch (v.getId()) {
             case R.id.btn_get_picture:
                 getPicture();
-                break;
-            case R.id.btn_plus:
-                plusStock();
-                break;
-            case R.id.btn_minus:
-                minStock();
                 break;
             case R.id.btn_save:
                 closeKeyboard();
@@ -162,10 +150,5 @@ public class InputActivity extends AppCompatActivity implements View.OnClickList
             InputMethodManager i = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             i.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
-    }
-    private void plusStock() {
-    }
-
-    private void minStock() {
     }
 }

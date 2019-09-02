@@ -1,6 +1,11 @@
 package com.dintaaditya.simpleinventory.Model;
 
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.ServerTimestamp;
+
 public class Item {
+    @ServerTimestamp
+    public Timestamp timestamp;
     private String name, image;
     private int stock;
 
@@ -11,6 +16,14 @@ public class Item {
         this.name = name;
         this.image = image;
         this.stock = stock;
+    }
+
+    public Timestamp getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Timestamp timestamp) {
+        this.timestamp = timestamp;
     }
 
     public String getName() {

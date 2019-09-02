@@ -1,12 +1,15 @@
 package com.dintaaditya.simpleinventory;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -18,6 +21,10 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.dintaaditya.simpleinventory.Model.ItemLog;
+import com.dintaaditya.simpleinventory.Model.Shipment;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -36,10 +43,15 @@ import javax.annotation.Nullable;
 public class ShipmentActivity extends AppCompatActivity {
     TextView tvName, tvSKU, tvStock;
     ImageView imgItem;
+    EditText edtReceiver, edtQuantity;
     String SKU;
-    DocumentReference itemDetail;
+    DocumentReference itemDetail, shipmentRef;
     Spinner spinnerProvince, spinnerCity, spinnerPostCode;
     Button btnSendItem;
+    LinearLayout progressBar;
+    FirebaseFirestore firestore;
+    int stock;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,33 +63,41 @@ public class ShipmentActivity extends AppCompatActivity {
         tvName = findViewById(R.id.tv_name);
         tvSKU = findViewById(R.id.tv_SKU);
         tvStock = findViewById(R.id.tv_stock);
+        edtReceiver = findViewById(R.id.edt_receiver);
+        edtQuantity = findViewById(R.id.edt_quantity);
         imgItem = findViewById(R.id.img_item);
         btnSendItem = findViewById(R.id.btn_send_item);
         spinnerProvince = findViewById(R.id.spinner_province);
         spinnerCity = findViewById(R.id.spinner_city);
         spinnerPostCode = findViewById(R.id.spinner_post_code);
+        progressBar = findViewById(R.id.progress_bar);
 
-        btnSendItem.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-//                getProvince();
-            }
-        });
+        firestore = FirebaseFirestore.getInstance();
+        itemDetail = firestore.document("Item/" + SKU);
     }
+
 
     @Override
     protected void onStart() {
         super.onStart();
         getProvince();
-//        getCity();
-//        getPostCode();
-        itemDetail = FirebaseFirestore.getInstance().document("Item/" + SKU);
+        progressBar.setVisibility(View.VISIBLE);
+
+        btnSendItem.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                progressBar.setVisibility(View.VISIBLE);
+                saveShipmentData();
+            }
+        });
+
+
         itemDetail.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
                 String name = documentSnapshot.getString("name");
                 String image = documentSnapshot.getString("image");
-                Integer stock = documentSnapshot.getLong("stock").intValue();
+                stock = documentSnapshot.getLong("stock").intValue();
 
                 tvSKU.setText("SKU: " + SKU);
                 tvName.setText(name);
@@ -87,6 +107,66 @@ public class ShipmentActivity extends AppCompatActivity {
         });
 
 
+    }
+
+    private void saveShipmentData() {
+        String receiver_name = edtReceiver.getText().toString().trim();
+        final int quantity = Integer.parseInt(edtQuantity.getText().toString().trim());
+        String addressProvince = spinnerProvince.getSelectedItem().toString();
+        String addressCity = spinnerCity.getSelectedItem().toString();
+        String addressPostCode = spinnerPostCode.getSelectedItem().toString();
+        String address = addressProvince + ", " + addressCity + ", " + addressPostCode;
+        Shipment newShipment = new Shipment(SKU, address, receiver_name, quantity);
+        final int previous_stock = stock;
+        if (quantity < stock) {
+            firestore.collection("Shipment").add(newShipment)
+                    .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                        @Override
+                        public void onSuccess(DocumentReference documentReference) {
+                            //change stock
+                            final int last_stock = stock - quantity;
+                            shipmentRef = firestore.document("Item/" + SKU);
+                            shipmentRef.update("stock", last_stock)
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            //new log item
+                                            ItemLog newLog = new ItemLog(previous_stock, quantity, last_stock, "Outcoming");
+                                            firestore.collection("Item/" + SKU + "/Log").add(newLog)
+                                                    .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                                                        @Override
+                                                        public void onSuccess(DocumentReference documentReference) {
+                                                            Toast.makeText(ShipmentActivity.this, "New Log Added Successfully", Toast.LENGTH_SHORT).show();
+                                                        }
+                                                    })
+                                                    .addOnFailureListener(new OnFailureListener() {
+                                                        @Override
+                                                        public void onFailure(@NonNull Exception e) {
+                                                            Toast.makeText(ShipmentActivity.this, "Failed to add Log" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                                        }
+                                                    });
+                                            progressBar.setVisibility(View.GONE);
+                                            onBackPressed();
+                                        }
+                                    })
+                                    .addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            Toast.makeText(ShipmentActivity.this, "Failed change stock!!," + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(ShipmentActivity.this, "Failed to insert data!!, " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        } else {
+            progressBar.setVisibility(View.GONE);
+            Toast.makeText(this, "insufficient Stock !!", Toast.LENGTH_LONG).show();
+        }
     }
 
     private void getProvince() {
@@ -195,6 +275,7 @@ public class ShipmentActivity extends AppCompatActivity {
                         postCodeArray.add(kecamatan + ", " + kelurahan + " (" + postCode + ")");
                     }
                     spinnerPostCode.setAdapter(new ArrayAdapter<String>(ShipmentActivity.this, android.R.layout.simple_list_item_1, postCodeArray));
+                    progressBar.setVisibility(View.GONE);
                 } catch (JSONException e) {
                     Toast.makeText(ShipmentActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
                 }

@@ -13,15 +13,16 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.dintaaditya.simpleinventory.Model.ItemLog;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -35,8 +36,9 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
     ImageView imgItem;
     EditText edtSKU, edtName, edtStock;
     Button btnShowLog, btnSendItem, btnCancel, btnUpdate;
-    ImageButton btnPlus, btnMinus;
     DocumentReference itemDetail;
+    CollectionReference logItemRef;
+    int previous_stock, stock;
 
     LinearLayout progressBar;
 
@@ -56,18 +58,17 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
         btnSendItem = findViewById(R.id.btn_send_item);
         btnCancel = findViewById(R.id.btn_cancel);
         btnUpdate = findViewById(R.id.btn_update);
-        btnPlus = findViewById(R.id.btn_plus);
-        btnMinus = findViewById(R.id.btn_minus);
         progressBar = findViewById(R.id.progress_bar);
 
         btnShowLog.setOnClickListener(this);
         btnSendItem.setOnClickListener(this);
         btnCancel.setOnClickListener(this);
         btnUpdate.setOnClickListener(this);
-        btnPlus.setOnClickListener(this);
-        btnMinus.setOnClickListener(this);
 
         formState(false);
+        itemDetail = FirebaseFirestore.getInstance().document("Item/" + SKU);
+        logItemRef = FirebaseFirestore.getInstance().collection("Item/" + SKU + "/Log");
+
 
     }
 
@@ -119,14 +120,13 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private void showItemDetail() {
-        itemDetail = FirebaseFirestore.getInstance().document("Item/" + SKU);
+
         itemDetail.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
                 String name = documentSnapshot.getString("name");
                 String image = documentSnapshot.getString("image");
-                Integer stock = documentSnapshot.getLong("stock").intValue();
-
+                stock = documentSnapshot.getLong("stock").intValue();
                 edtSKU.setText(SKU);
                 edtName.setText(name);
                 edtStock.setText(String.valueOf(stock));
@@ -136,12 +136,39 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private void updateData() {
+        String name = edtName.getText().toString().trim();
+        final int last_stock = Integer.parseInt(edtStock.getText().toString());
+        previous_stock = stock;
         itemDetail.update(
-                "name", edtName.getText().toString().trim(),
-                "stock", Integer.parseInt(edtStock.getText().toString()))
+                "name", name,
+                "stock", last_stock)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
+                        String status;
+                        int stock_movement;
+                        if (last_stock > previous_stock) {
+                            status = "Incoming";
+                            stock_movement = last_stock - previous_stock;
+                        } else {
+                            status = "Outcoming";
+                            stock_movement = previous_stock - last_stock;
+                        }
+                        ItemLog newLog = new ItemLog(previous_stock, stock_movement, last_stock, status);
+                        logItemRef.add(newLog)
+                                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                                    @Override
+                                    public void onSuccess(DocumentReference documentReference) {
+                                        Toast.makeText(DetailActivity.this, "New Log Added Successfully", Toast.LENGTH_SHORT).show();
+                                    }
+                                })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Toast.makeText(DetailActivity.this, "Failed to add Log" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+
                         progressBar.setVisibility(View.GONE);
                         Toast.makeText(DetailActivity.this, "Data Updated Successfully", Toast.LENGTH_SHORT).show();
                         formState(false);
@@ -187,8 +214,6 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
     private void formState(boolean status) {
         edtName.setEnabled(status);
         edtStock.setEnabled(status);
-        btnPlus.setEnabled(status);
-        btnMinus.setEnabled(status);
         if (status) {
             btnCancel.setVisibility(View.VISIBLE);
             btnUpdate.setVisibility(View.VISIBLE);
